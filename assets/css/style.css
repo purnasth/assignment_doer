@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: "PurnasFont-Regular";
+  src: url(../fonts/PurnasFont-Regular.ttf);
+}
+
+body {
+  font-family: "PurnasFont-Regular";
+  background-color: #f5f5f5;
+}

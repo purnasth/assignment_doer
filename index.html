@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generate PDF with Text</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </head>
+  <body>
+    <h1>Generate PDF with Text</h1>
+    <button id="generatePDF">Generate PDF</button>
+
+    <textarea
+      id="textField"
+      cols="30"
+      rows="10"
+      placeholder="Enter text here..."
+    ></textarea>
+    <script>
+      const download = document.getElementById("generatePDF");
+
+      download.addEventListener("click", text2handwritingConvertion);
+
+      window.jsPDF = window.jspdf.jsPDF;
+
+      function text2handwritingConvertion() {
+        var doc = new jsPDF({
+          orientation: "p",
+          unit: "mm",
+          format: "a4",
+        });
+
+        // Set font size and font type
+        const fontSize = 18;
+        doc.setFontSize(fontSize);
+        doc.addFont(
+          "./assets/fonts/PurnasFont-Regular.ttf",
+          "PurnasFont-Regular",
+          "normal"
+        );
+        doc.setFont("PurnasFont-Regular");
+
+        let text = textField.value;
+        let margin = 25;
+
+        // Set initial position
+        let x = margin;
+        let y = margin;
+
+        // Calculate available width for text
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const availableHeight = pageHeight - 2 * margin;
+        const availableWidth = pageWidth - 2 * margin + margin; // Leave 15 units margin on each side
+
+        // Split the text into multiple lines within the document's width
+        var lines = doc.splitTextToSize(text, availableWidth - fontSize);
+
+        // Loop through each line and add it to the PDF
+        lines.forEach((line) => {
+          if (y >= availableHeight + margin) {
+            doc.addPage("a4", "p");
+            y = margin;
+          }
+          doc.text(x, y, line);
+          y += 10;
+        });
+        window.open(doc.output("bloburl"), "_blank");
+        doc.save("purna.pdf");
+      }
+    </script>
+  </body>
+</html>
