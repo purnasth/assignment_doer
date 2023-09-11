@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Generate PDF with Text</title>
+    <title>Generate PDF with Te~xt</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   </head>
   <body>
@@ -31,40 +31,93 @@
         });
 
         // Set font size and font type
-        const fontSize = 18;
+        const fontSize = 15;
         doc.setFontSize(fontSize);
         doc.addFont(
-          "./assets/fonts/PurnasFont-Regular.ttf",
+          "./assets/fonts/FiraCodeiScript-Italic.ttf",
           "PurnasFont-Regular",
           "normal"
         );
         doc.setFont("PurnasFont-Regular");
 
         let text = textField.value;
-        let margin = 25;
+        let topMargin = -15;
+        let leftMargin = 25;
+        let rightMargin = 15;
+        let bottomMargin = 0;
+        let leftPadding = 5;
+        let lineHeight = 6.75;
+        let marginLineWidth = 0.5;
+        let topPadding = 15;
 
-        // Set initial position
-        let x = margin;
-        let y = margin;
+        function drawMargins() {
+          // Set line width for margin lines
+          doc.setLineWidth(marginLineWidth);
 
-        // Calculate available width for text
+          // Draw top margin line
+          doc.line(
+            leftMargin,
+            topMargin + topPadding,
+            pageWidth - rightMargin,
+            topMargin + topPadding
+          );
+
+          // Draw right margin line
+          doc.line(
+            pageWidth - rightMargin,
+            topMargin + topPadding,
+            pageWidth - rightMargin,
+            pageHeight - bottomMargin
+          );
+
+          // Draw bottom margin line
+          doc.line(
+            leftMargin,
+            pageHeight - bottomMargin,
+            pageWidth - rightMargin,
+            pageHeight - bottomMargin
+          );
+
+          // Draw left margin line
+          doc.line(
+            leftMargin,
+            topMargin + topPadding,
+            leftMargin,
+            pageHeight - bottomMargin
+          );
+
+          // Reset line width to default
+          doc.setLineWidth(0.2);
+        }
+
+        // Calculate available width for text within the margins
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const availableHeight = pageHeight - 2 * margin;
-        const availableWidth = pageWidth - 2 * margin + margin; // Leave 15 units margin on each side
+        const availableWidth =
+          pageWidth - leftMargin - rightMargin - leftPadding; // Adjusted for left padding
+        const availableHeight = pageHeight - topMargin - bottomMargin;
 
-        // Split the text into multiple lines within the document's width
+        // Draw margins on the first page
+        drawMargins();
+
+        // Set initial position within the margins, accounting for left padding and top padding
+        let x = leftMargin + leftPadding;
+        let y = topMargin + topPadding + fontSize;
+
+        // Split the text into multiple lines within the available width
         var lines = doc.splitTextToSize(text, availableWidth - fontSize);
 
         // Loop through each line and add it to the PDF
-        lines.forEach((line) => {
-          if (y >= availableHeight + margin) {
+        lines.forEach((line, index) => {
+          if (y + fontSize > availableHeight) {
             doc.addPage("a4", "p");
-            y = margin;
+            y = topMargin + topPadding + fontSize;
+            drawMargins(); // Draw margins on each new page
           }
           doc.text(x, y, line);
-          y += 10;
+          y += lineHeight; // Set the line height
         });
+
         window.open(doc.output("bloburl"), "_blank");
         doc.save("purna.pdf");
       }
