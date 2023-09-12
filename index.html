@@ -104,19 +104,46 @@
         let x = leftMargin + leftPadding;
         let y = topMargin + topPadding + fontSize;
 
-        // Split the text into multiple lines within the available width
-        var lines = doc.splitTextToSize(text, availableWidth - fontSize);
+        // Split the text into lines using <newline/> as a separator
+        const lines = text.split("<newPage/>");
 
-        // Loop through each line and add it to the PDF
+        // Initialize variables for tracking page position
+        let currentPage = 1; // Start with page 1
+        let yOnCurrentPage = topMargin + topPadding + fontSize; // Initialize y position on the current page
+
+        // Loop through each line separated by <newline/>
         lines.forEach((line, index) => {
-          if (y + fontSize > availableHeight) {
+          // Split each line into multiple lines within the available width
+          const splitLines = doc.splitTextToSize(
+            line,
+            availableWidth - fontSize
+          );
+
+          // Loop through each split line
+          splitLines.forEach((splitLine) => {
+            if (yOnCurrentPage + fontSize > availableHeight) {
+              // If the current line exceeds the available height on the current page, move to the next page
+              doc.addPage("a4", "p");
+              currentPage++;
+              yOnCurrentPage = topMargin + topPadding + fontSize;
+              drawMargins(); // Draw margins on each new page
+            }
+
+            // Add the split line to the PDF
+            doc.text(x, yOnCurrentPage, splitLine);
+            yOnCurrentPage += lineHeight; // Set the line height for the current page
+          });
+
+          // If there are more lines to print, add a new page for the next set of lines
+          if (index < lines.length - 1) {
             doc.addPage("a4", "p");
-            y = topMargin + topPadding + fontSize;
+            currentPage++;
+            yOnCurrentPage = topMargin + topPadding + fontSize;
             drawMargins(); // Draw margins on each new page
           }
-          doc.text(x, y, line);
-          y += lineHeight; // Set the line height
         });
+
+        // The 'currentPage' variable now contains the total number of pages generated
 
         window.open(doc.output("bloburl"), "_blank");
         doc.save("purna.pdf");
